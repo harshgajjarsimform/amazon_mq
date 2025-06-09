@@ -14,7 +14,7 @@ provider "aws" {
 
 
 module "amazon-mq" {
-  source = "../"
+  source = "github.com/harshgajjarsimform/amazon_mq?ref=main"
 
   broker_name        = var.broker_name
   engine_type        = var.engine_type
@@ -30,8 +30,10 @@ module "amazon-mq" {
   mq_config_data = var.mq_config_data
 
   authentication_strategy = var.authentication_strategy
-  mq_users                = var.mq_users
-
+  mq_username               = var.mq_username
+  # mq_password               = var.mq_password
+  secretsmanager_policy = var.secretsmanager_policy
+  secretsmanager_name  = var.secretsmanager_name
   auto_minor_version_upgrade = var.auto_minor_version_upgrade
 
   publicly_accessible = var.publicly_accessible
@@ -41,9 +43,9 @@ module "amazon-mq" {
   logs               = var.logs
   encryption_options = var.encryption_options
 
-
+  use_secret_manager      = var.use_secret_manager
   maintenance_window_start_time = var.maintenance_window_start_time
-
+  
   tags = var.tags
 
 }
