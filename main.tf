@@ -6,7 +6,7 @@ resource "aws_mq_configuration" "mq_config" {
   data           = var.mq_config_data
 }
 
-resource "random_password" "mq_password" {
+resource "random_password" "random_mq_password" {
   count       = var.use_secret_manager ? 1 : 0
   length      = 16
   special     = true
@@ -21,14 +21,13 @@ resource "aws_secretsmanager_secret" "mq_secret" {
   name                    = local.secretsmanager_name
   description             = "MQ user credentials for ${var.broker_name}"
   recovery_window_in_days = var.recovery_window_in_days
-  policy                  = var.secretsmanager_policy
   tags       = var.secretsmanager_tags
 }
 
 resource "aws_secretsmanager_secret_version" "mq_secret_version" {
   count         = var.use_secret_manager ? 1 : 0
   secret_id     = aws_secretsmanager_secret.mq_secret[0].id
-  secret_string = local.json_secretsmanager_policy
+  secret_string = local.json_secret
 }
 
 
@@ -69,7 +68,7 @@ resource "aws_mq_broker" "amazon-mq" {
 
   user {
     username = var.mq_username
-    password = var.use_secret_manager ? random_password.mq_password[0].result : var.mq_password
+    password = var.use_secret_manager ? random_password.random_mq_password[0].result : var.mq_password
   }
 
   encryption_options {

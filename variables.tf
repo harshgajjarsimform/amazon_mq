@@ -195,29 +195,15 @@ variable "maintenance_window_start_time" {
 
 locals {
   secretsmanager_name        = "${var.secretsmanager_name}-${var.broker_name}-mq-secret"
-  json_secretsmanager_policy = jsonencode(var.secretsmanager_policy)
+  json_secret = jsonencode({
+    username = var.mq_username
+    password = var.use_secret_manager ? random_password.random_mq_password[0].result : var.mq_password
+  })
 }
 
 variable "secretsmanager_name" {
   description = "The name of the Secrets Manager secret."
   type        = string
-}
-
-variable "secretsmanager_policy" {
-  description = "The policy for the Secrets Manager secret."
-  type        = string
-  default     = <<EOT
-  {
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
-        Resource = "*"
-      }
-    ]
-  }
-  EOT
 }
 
 variable "secretsmanager_tags" {

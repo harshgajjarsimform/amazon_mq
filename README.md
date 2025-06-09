@@ -41,23 +41,6 @@ module "amazon-mq" {
   secretsmanager_tags     = {
     "env" = "test"
   }
-  
-  # JSON policy for Secrets Manager
-  secretsmanager_policy   = <<-JSON
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Sid": "Statement1",
-        "Effect": "Allow",
-        "Action": [
-          "secretsmanager:GetSecretValue"
-        ],
-        "Resource": "*"
-      }
-    ]
-  }
-  JSON
 
   apply_immediately          = true
   auto_minor_version_upgrade = true
@@ -148,21 +131,6 @@ recovery_window_in_days = 7
 secretsmanager_tags     = {
   "env" = "test"
 }
-secretsmanager_policy   = <<EOT
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "Statement1",
-      "Effect": "Allow",
-      "Action": [
-        "secretsmanager:GetSecretValue"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-EOT
 
 security_groups    = ["sg-00d5b55b331ca8f1e"]
 subnet_ids_primary = ["subnet-07b30c16b2937ca11", "subnet-0cc668bb1d4d78f64"] # Need at least 2 subnets in different AZs
@@ -216,7 +184,6 @@ encryption_options = {
 | mq_password | Password for the broker (required when use_secret_manager = false) | `string` | `null` | no |
 | use_secret_manager | Whether to use AWS Secrets Manager for password storage | `bool` | `false` | no |
 | secretsmanager_name | The base name for the Secrets Manager secret | `string` | n/a | yes (when use_secret_manager = true) |
-| secretsmanager_policy | IAM policy for the Secrets Manager secret in JSON format | `string` | `null` | no |
 | secretsmanager_tags | Tags to apply to the Secrets Manager secret | `map(string)` | `{}` | no |
 | recovery_window_in_days | Recovery window for the Secrets Manager secret | `number` | `7` | no |
 | deployment_mode | The deployment mode for the Amazon MQ broker | `string` | n/a | yes |

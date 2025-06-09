@@ -125,6 +125,7 @@ variable "custom_config" {
   default     = false
 }
 
+
 /*
 ## Example XML configuration for AmazonMQ (activeMQ) for tfvars
 
@@ -192,31 +193,10 @@ variable "maintenance_window_start_time" {
 # SecretsManager Configuration
 ###################################
 
-locals {
-  secretsmanager_name        = "${var.broker_name}-mq-secret-1"
-  json_secretsmanager_policy = jsonencode(var.secretsmanager_policy)
-}
 
 variable "secretsmanager_name" {
   description = "The name of the Secrets Manager secret."
   type        = string
-}
-
-variable "secretsmanager_policy" {
-  description = "The policy for the Secrets Manager secret."
-  type        = string
-  default     = <<EOT
-  {
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
-        Resource = "*"
-      }
-    ]
-  }
-  EOT
 }
 
 variable "secretsmanager_tags" {
