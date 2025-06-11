@@ -3,21 +3,21 @@
 ###################################
 
 variable "primary_region" {
-  description = "The primary AWS region for the AmazonMQ (activeMQ) broker."
+  description = "The primary AWS region for the AmazonMQ () broker."
   type        = string
 }
 
 variable "broker_name" {
-  description = "The name of the AmazonMQ (activeMQ) broker."
+  description = "The name of the AmazonMQ () broker."
   type        = string
 }
 
 variable "engine_type" {
-  description = "The type of the AmazonMQ (activeMQ) engine."
+  description = "The type of the AmazonMQ () engine."
   type        = string
   validation {
-    condition     = contains(["ActiveMQ"], var.engine_type)
-    error_message = "Valid values are ActiveMQ or AmazonMQ (activeMQ)."
+    condition     = contains(["ActiveMQ", "RabbitMQ"], var.engine_type)
+    error_message = "Valid values are ActiveMQ or RabbitMQ ."
   }
 }
 
@@ -27,12 +27,12 @@ variable "engine_version" {
 }
 
 variable "host_instance_type" {
-  description = "The instance type for the AmazonMQ (activeMQ) broker."
+  description = "The instance type for the AmazonMQ broker."
   type        = string
 }
 
 variable "deployment_mode" {
-  description = "The deployment mode for the AmazonMQ (activeMQ) broker."
+  description = "The deployment mode for the AmazonMQ broker."
   type        = string
   validation {
     condition     = contains(["SINGLE_INSTANCE", "ACTIVE_STANDBY_MULTI_AZ"], var.deployment_mode)
@@ -41,12 +41,16 @@ variable "deployment_mode" {
 }
 
 variable "storage_type" {
-  description = "The storage type for the AmazonMQ (activeMQ) broker. valid"
+  description = "The storage type for the AmazonMQ () broker. valid"
   type        = string
+  validation {
+    condition     = contains(["ebs", "efs"], var.storage_type)
+    error_message = "Valid values are ebs or efs."
+  }
 }
 
 variable "auto_minor_version_upgrade" {
-  description = "Whether to automatically upgrade the AmazonMQ (activeMQ) broker to the latest minor version."
+  description = "Whether to automatically upgrade the AmazonMQ () broker to the latest minor version."
   type        = bool
   default     = false
 }
@@ -68,12 +72,12 @@ variable "tags" {
 ###################################
 
 variable "authentication_strategy" {
-  description = "The authentication strategy for the AmazonMQ (activeMQ) broker value can be simple or ldap."
+  description = "The authentication strategy for the AmazonMQ () broker value can be simple or ldap."
   type        = string
 }
 
 variable "mq_username" {
-  description = "A username details for the AmazonMQ (activeMQ) broker."
+  description = "A username details for the AmazonMQ () broker."
   type        = string
   sensitive   = true
 }
@@ -82,7 +86,7 @@ variable "mq_password" {
   description = "value can be random password or secret manager"
   type        = string
   sensitive   = true
-  default = null
+  default     = null
 }
 
 variable "use_secret_manager" {
@@ -91,7 +95,7 @@ variable "use_secret_manager" {
 }
 
 variable "security_groups" {
-  description = "The list of security group IDs for the AmazonMQ (activeMQ) broker."
+  description = "The list of security group IDs for the AmazonMQ () broker."
   type        = list(string)
   default     = []
 }
@@ -101,13 +105,13 @@ variable "security_groups" {
 ###################################
 
 variable "publicly_accessible" {
-  description = "Whether the AmazonMQ (activeMQ) broker is publicly accessible."
+  description = "Whether the AmazonMQ () broker is publicly accessible."
   type        = bool
   default     = false
 }
 
 variable "subnet_ids_primary" {
-  description = "The list of subnet IDs for the primary AmazonMQ (activeMQ) broker."
+  description = "The list of subnet IDs for the primary AmazonMQ () broker."
   type        = list(string)
   validation {
     condition     = var.deployment_mode != "ACTIVE_STANDBY_MULTI_AZ" || length(var.subnet_ids_primary) >= 2
@@ -120,18 +124,18 @@ variable "subnet_ids_primary" {
 ###################################
 
 variable "custom_config" {
-  description = "Whether to use a custom configuration for the AmazonMQ (activeMQ) broker."
+  description = "Whether to use a custom configuration for the AmazonMQ () broker."
   type        = bool
   default     = false
 }
 
 
 /*
-## Example XML configuration for AmazonMQ (activeMQ) for tfvars
+## Example XML configuration for AmazonMQ () for tfvars
 
 mq_config_data = <<XML
 <?xml version="1.0" encoding="UTF-8"?>
-<broker xmlns="http://activemq.apache.org/schema/core">
+<broker xmlns="http://.apache.org/schema/core">
   <plugins>
     <forcePersistencyModeBrokerPlugin persistenceFlag="true"/>
   </plugins>
@@ -139,7 +143,7 @@ mq_config_data = <<XML
 XML
 */
 variable "mq_config_data" {
-  description = "The data of the AmazonMQ (activeMQ) configuration."
+  description = "The data of the AmazonMQ () configuration."
   type        = string
 }
 
@@ -148,7 +152,7 @@ variable "mq_config_data" {
 ###################################
 
 variable "logs" {
-  description = "The logs configuration for the AmazonMQ (activeMQ) broker."
+  description = "The logs configuration for the AmazonMQ () broker."
   type = object({
     general = bool
     audit   = bool
@@ -157,10 +161,16 @@ variable "logs" {
     general = true
     audit   = true
   }
+  validation {
+    condition = (
+      var.engine_type == "ActiveMQ" || (var.engine_type != "ActiveMQ" && var.logs.audit == false)
+    )
+    error_message = "logs.audit can only be true when engine_type is 'ActiveMQ'."
+  }
 }
 
 variable "encryption_options" {
-  description = "The encryption options for the AmazonMQ (activeMQ) broker."
+  description = "The encryption options for the AmazonMQ () broker."
   type = object({
     kms_key_id        = string
     use_aws_owned_key = bool
@@ -168,6 +178,12 @@ variable "encryption_options" {
   default = {
     kms_key_id        = null
     use_aws_owned_key = true
+  }
+
+  validation {
+    condition = (
+    var.encryption_options.use_aws_owned_key || (!var.encryption_options.use_aws_owned_key && var.encryption_options.kms_key_id != null && var.encryption_options.kms_key_id != ""))
+    error_message = "Specify a KMS key ID only if use_aws_owned_key is false."
   }
 }
 
@@ -194,7 +210,7 @@ variable "maintenance_window_start_time" {
 ###################################
 
 locals {
-  secretsmanager_name        = "${var.secretsmanager_name}-${var.broker_name}-mq-secret"
+  secretsmanager_name = var.use_secret_manager ? "${var.secretsmanager_name}-${var.broker_name}-mq-secret" : null
   json_secret = jsonencode({
     username = var.mq_username
     password = var.use_secret_manager ? random_password.random_mq_password[0].result : var.mq_password
@@ -204,6 +220,12 @@ locals {
 variable "secretsmanager_name" {
   description = "The name of the Secrets Manager secret."
   type        = string
+  default     = null
+
+  validation {
+    condition     = (!var.use_secret_manager || (var.use_secret_manager && var.secretsmanager_name != null && var.secretsmanager_name != ""))
+    error_message = "You must specify a Secrets Manager name when use_secret_manager is true."
+  }
 }
 
 variable "secretsmanager_tags" {

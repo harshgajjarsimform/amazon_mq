@@ -21,7 +21,7 @@ resource "aws_secretsmanager_secret" "mq_secret" {
   name                    = local.secretsmanager_name
   description             = "MQ user credentials for ${var.broker_name}"
   recovery_window_in_days = var.recovery_window_in_days
-  tags       = var.secretsmanager_tags
+  tags                    = var.secretsmanager_tags
 }
 
 resource "aws_secretsmanager_secret_version" "mq_secret_version" {
@@ -72,11 +72,11 @@ resource "aws_mq_broker" "amazon-mq" {
   }
 
   encryption_options {
-    kms_key_id        = var.encryption_options.kms_key_id != null ? var.encryption_options.kms_key_id : null
+    kms_key_id        = var.encryption_options.use_aws_owned_key ? null : var.encryption_options.kms_key_id
     use_aws_owned_key = var.encryption_options.use_aws_owned_key
   }
 
   tags = var.tags
 
-  depends_on = [ aws_secretsmanager_secret.mq_secret ]
+  depends_on = [aws_secretsmanager_secret.mq_secret]
 }
