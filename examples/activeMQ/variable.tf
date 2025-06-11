@@ -194,10 +194,10 @@ variable "maintenance_window_start_time" {
 ###################################
 
 
-variable "secretsmanager_name" {
-  description = "The name of the Secrets Manager secret."
-  type        = string
-}
+# variable "secretsmanager_name" {
+#   description = "The name of the Secrets Manager secret."
+#   type        = string
+# }
 
 variable "secretsmanager_tags" {
   description = "A map of tags to assign to the Secrets Manager secret."
